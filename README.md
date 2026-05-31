@@ -54,6 +54,8 @@ Nếu dùng LuckPerms:
 
 ## Lệnh Người Chơi
 
+Alias: có thể dùng `/suscraft` thay cho `/sus`.
+
 | Lệnh | Mô tả |
 | --- | --- |
 | `/sus help` | Xem trợ giúp |
@@ -69,6 +71,7 @@ Nếu dùng LuckPerms:
 | `/sus emergency` | Gọi họp khẩn tại emergency button |
 | `/sus tasks` | Mở danh sách task |
 | `/sus map` | Mở admin table cơ bản |
+| `/sus roomgui` | Mở GUI quản lý phòng cho host/admin |
 
 ## Lệnh Admin
 
@@ -77,6 +80,7 @@ Nếu dùng LuckPerms:
 | `/susadmin help` | Xem trợ giúp admin |
 | `/susadmin createarena <name>` | Tạo arena |
 | `/susadmin deletearena <name>` | Xóa arena |
+| `/susadmin gui <arena>` | Mở GUI setup/quản lý arena |
 | `/susadmin list` | Xem danh sách arena |
 | `/susadmin info <arena>` | Xem thông tin arena |
 | `/susadmin setlobby <arena>` | Set lobby chờ |
@@ -108,6 +112,14 @@ Ví dụ arena tên `skeld`.
 ```text
 /susadmin createarena skeld
 ```
+
+Có thể mở GUI setup để quản lý nhanh arena:
+
+```text
+/susadmin gui skeld
+```
+
+Trong GUI này admin có thể xem trạng thái lobby, game spawn, meeting, emergency, task, sabotage, vent, camera, room region, door và chạy validate. Với task, có thể xem loại task, id, vị trí, thêm task mới hoặc xóa task bằng thao tác trong GUI.
 
 ### 2. Set Lobby Chờ
 
@@ -308,6 +320,14 @@ Plugin trả về room ID, ví dụ:
 ABCDE
 ```
 
+Host có thể mở GUI quản lý phòng:
+
+```text
+/sus roomgui
+```
+
+GUI phòng cho phép xem danh sách người chơi, xem host hiện tại, start game, tăng/giảm số impostor, chọn map khác khi phòng còn đang chờ, kick người chơi hoặc đóng phòng.
+
 ### 2. Người Chơi Join Room
 
 ```text
@@ -372,12 +392,14 @@ Impostor nhận các item:
 
 | Item | Công dụng |
 | --- | --- |
-| Kill | Giết crewmate gần nhất trong range |
+| Kill | Giết crewmate gần nhất trong range nếu `impostor.give-kill-item: true` |
 | Sabotage | Mở GUI sabotage |
 | Vent | Mở GUI vent gần nhất |
 | Fake Task List | Xem/làm fake task |
 | Report | Có thể report xác |
 | Ship Map | Mở admin table |
+
+Mặc định plugin cho phép impostor kill bằng chuột phải trực tiếp vào player trong tầm gần, không cần cầm kiếm hoặc item Kill. Cơ chế này giảm khả năng bị lộ vì không hiện item đặc biệt trên tay.
 
 Mục tiêu:
 
@@ -430,8 +452,9 @@ Impostor có thể kill bằng:
 
 | Cách | Mô tả |
 | --- | --- |
-| Item Kill | Dùng item Kill khi đứng gần mục tiêu |
-| Đánh trực tiếp | Đánh crewmate, plugin xử lý như kill nếu hợp lệ |
+| Chuột phải vào player | Cách mặc định nếu `impostor.kill-without-weapon: true` |
+| Đánh trực tiếp | Đánh crewmate, plugin chặn damage thật và xử lý như kill nếu hợp lệ |
+| Item Kill | Chỉ có nếu bật `impostor.give-kill-item: true` |
 
 Điều kiện kill:
 
@@ -713,8 +736,10 @@ game:
   starting-countdown: 10
   confirm-ejects: true
   hide-nametags: true
+  hide-tab-name: false
   isolate-chat: true
   reconnect-timeout-seconds: 60
+  host-leave-behavior: "TRANSFER_OR_CLOSE"
 ```
 
 ### Task
@@ -732,10 +757,36 @@ tasks:
 impostor:
   kill-cooldown: 30
   kill-range: 3.0
+  kill-without-weapon: true
+  give-kill-item: false
   require-line-of-sight: true
   reset-cooldown-after-meeting: true
   can-sabotage-as-ghost: false
 ```
+
+### Đồng Phục / Disguise
+
+```yaml
+disguise:
+  use-colored-leather-armor: true
+  force-clear-armor-before-game: true
+  restore-armor-after-game: true
+```
+
+Khi bật, mỗi người trong trận được mặc full giáp da màu riêng để phân biệt thay cho tên thật. Armor gốc vẫn được lưu trong snapshot và restore sau game.
+
+### Bảo Vệ Người Chơi Trong Trận
+
+```yaml
+protection:
+  enabled: true
+  keep-health: true
+  keep-food: true
+  clear-negative-effects: true
+  block-foreign-inventory-items: true
+```
+
+Cơ chế này giúp hạn chế plugin khác gây mất máu, tụt food, thêm hiệu ứng xấu hoặc nhét item ngoài vào người chơi trong lúc đang ở trận SusCraft. Khi game kết thúc, trạng thái gốc được restore từ snapshot.
 
 ### Meeting
 
